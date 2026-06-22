@@ -1,0 +1,70 @@
+name: 'Sync Semantic Release Artifacts to Main/Master'
+description: 'Run after semantic-release to sync release artifacts from the release branch into the main or master branch (fast-forward/merge or open a PR).'
+author: 'knowledgepixels'
+
+branding:
+  icon: 'git-merge'
+  color: 'blue'
+
+inputs:
+  main-branch:
+    description: 'The branch to update (the target branch).'
+    required: false
+    default: 'main'
+  release-branch:
+    description: 'The branch to merge from (the source branch).'
+    required: false
+    default: 'release'
+  git-user-name:
+    description: 'Name used for the merge commit.'
+    required: false
+    default: 'github-actions[bot]'
+  git-user-email:
+    description: 'Email used for the merge commit.'
+    required: false
+    default: 'github-actions[bot]@users.noreply.github.com'
+  pr-needed:
+    description: 'Set to "true" to open a PR instead of pushing directly.'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Push ${{ inputs.main-branch }} branch
+      if: ${{ inputs.pr-needed == 'false' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        git config user.name "${{ inputs.git-user-name }}"
+        git config user.email "${{ inputs.git-user-email }}"
+
+        git fetch --unshallow origin || true
+        git fetch origin "${{ inputs.release-branch }}"
+        git fetch origin "${{ inputs.main-branch }}"
+
+        git checkout -B "${{ inputs.main-branch }}" "origin/${{ inputs.main-branch }}"
+        git merge --no-edit "origin/${{ inputs.release-branch }}"
+        git push origin "${{ inputs.main-branch }}"
+
+    - name: Open PR to sync main
+      if: ${{ inputs.pr-needed == 'true' }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        set -euo pipefail
+        git fetch origin "${{ inputs.main-branch }}"
+        git fetch origin "${{ inputs.release-branch }}"
+    
+        # if no diff between main and release, skip PR creation
+        if git diff --quiet "origin/${{ inputs.main-branch }}" "origin/${{ inputs.release-branch }}"; then
+          echo "No changes to sync; skipping PR creation."
+          exit 0
+        fi
+        
+        gh pr create --base "${{ inputs.main-branch }}" --head "${{ inputs.release-branch }}" \
+          --title "chore: sync ${{ inputs.release-branch }} into ${{ inputs.main-branch }}" \
+          --body "Automated sync of release artifacts (version bump, CHANGELOG) into ${{ inputs.main-branch }}." \
+          || echo "A ${ { inputs.release-branch } }->${{ inputs.main-branch }} PR already exists; skipping."
