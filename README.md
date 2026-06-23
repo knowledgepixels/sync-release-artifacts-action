@@ -1,6 +1,6 @@
-# sync-release-artifacts-action
+# Sync Release Artifacts Action
 
-A GitHub Action that merges a `release` branch into `main` (or any two branches) and either pushes directly or opens a pull request depending on input.
+A GitHub Action that keeps a target branch (default: `main`) in sync with release artifacts published on the release branch (default: `release`) after semantic-release. It either merges the changes or opens a pull request, depending on the input.
 
 ## What it does
 
@@ -73,4 +73,4 @@ jobs:
 
 ## License
 
-MIT
+[MIT](https://github.com/knowledgepixels/sync-release-artifacts-action/blob/main/LICENSE)
