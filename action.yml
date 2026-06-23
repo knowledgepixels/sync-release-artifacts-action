@@ -54,17 +54,34 @@ runs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        set -euo pipefail
+        set -uo pipefail
+
         git fetch origin "${{ inputs.main-branch }}"
         git fetch origin "${{ inputs.release-branch }}"
-    
+
         # if no diff between main and release, skip PR creation
         if git diff --quiet "origin/${{ inputs.main-branch }}" "origin/${{ inputs.release-branch }}"; then
           echo "No changes to sync; skipping PR creation."
           exit 0
         fi
-        
-        gh pr create --base "${{ inputs.main-branch }}" --head "${{ inputs.release-branch }}" \
+
+        set +e
+        pr_output=$(gh pr create --base "${{ inputs.main-branch }}" --head "${{ inputs.release-branch }}" \
           --title "chore: sync ${{ inputs.release-branch }} into ${{ inputs.main-branch }}" \
-          --body "Automated sync of release artifacts (version bump, CHANGELOG) into ${{ inputs.main-branch }}." \
-          || echo "A ${{ inputs.release-branch }}->${{ inputs.main-branch }} PR already exists; skipping."
+          --body "Automated sync of release artifacts (version bump, CHANGELOG) into ${{ inputs.main-branch }}." 2>&1)
+        pr_status=$?
+        set -e
+
+        echo "$pr_output"
+
+        if [ $pr_status -eq 0 ]; then
+          exit 0
+        fi
+
+        if echo "$pr_output" | grep -qi "already exists"; then
+          echo "A ${{ inputs.release-branch }}->${{ inputs.main-branch }} PR already exists; skipping."
+          exit 0
+        fi
+
+        echo "::error::Failed to create PR (see output above)."
+        exit "$pr_status"
