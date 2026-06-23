@@ -11,17 +11,15 @@ A GitHub Action that merges a `release` branch into `main` (or any two branches)
 
 ## Usage
 
-Example workflow (manual trigger):
+Example workflow:
 
 ~~~yaml
 name: Update main branch
 on:
-  workflow_dispatch:
-    inputs:
-      pr-needed:
-        description: 'Set to "true" to open a PR'
-        required: false
-        default: 'false'
+  push:
+    branches: [ release ]
+    paths-ignore:
+      - 'CHANGELOG.md'
 
 permissions:
   contents: write
@@ -31,15 +29,15 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
 
-      - uses: ./
+      - uses: knowledgepixels/sync-release-artifacts-action@main
         with:
           main-branch: main
           release-branch: release
-          pr-needed: ${{ github.event.inputs.pr-needed }}
+          pr-needed: false
           git-user-name: github-actions[bot]
           git-user-email: github-actions[bot]@users.noreply.github.com
 ~~~
@@ -59,7 +57,7 @@ jobs:
 - Ensure the workflow grants:
   - `contents: write` (required to push)
   - `pull-requests: write` (required when `pr-needed: 'true'`)
-- Use `actions/checkout@v4` with `fetch-depth: 0` (action expects a working repository).
+- Use `actions/checkout` with `fetch-depth: 0` (action expects a working repository).
 - If `main` is protected, provide a token or allow the Actions bot to push, or use the PR flow.
 
 ## Testing
