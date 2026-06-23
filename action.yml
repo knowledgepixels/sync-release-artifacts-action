@@ -52,7 +52,7 @@ runs:
       if: ${{ inputs.pr-needed == 'true' }}
       shell: bash
       env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ github.token }}
       run: |
         set -euo pipefail
         git fetch origin "${{ inputs.main-branch }}"
