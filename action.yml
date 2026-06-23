@@ -67,4 +67,4 @@ runs:
         gh pr create --base "${{ inputs.main-branch }}" --head "${{ inputs.release-branch }}" \
           --title "chore: sync ${{ inputs.release-branch }} into ${{ inputs.main-branch }}" \
           --body "Automated sync of release artifacts (version bump, CHANGELOG) into ${{ inputs.main-branch }}." \
-          || echo "A ${ { inputs.release-branch } }->${{ inputs.main-branch }} PR already exists; skipping."
+          || echo "A ${{ inputs.release-branch }}->${{ inputs.main-branch }} PR already exists; skipping."
