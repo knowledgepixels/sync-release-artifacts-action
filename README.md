@@ -33,7 +33,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: knowledgepixels/sync-release-artifacts-action@main
+      - uses: knowledgepixels/sync-release-artifacts-action@3926beed487a1c183af52423344bf6ee36fd7b27 # v1.0.0
         with:
           main-branch: main
           release-branch: release
