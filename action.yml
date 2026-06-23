@@ -1,5 +1,5 @@
-name: 'Sync Semantic Release Artifacts to Main/Master'
-description: 'Run after semantic-release to sync release artifacts from the release branch into the main or master branch (fast-forward/merge or open a PR).'
+name: 'Post-Release Artifacts Sync'
+description: 'Keep a target branch in sync with release artifacts after semantic-release.'
 author: 'knowledgepixels'
 
 branding:
